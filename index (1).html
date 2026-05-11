@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Do You Know Your Bear? 🐻🦌</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --cream: #fff8f0;
+    --soft-brown: #c8855a;
+    --warm-brown: #8b5a3c;
+    --bambi-tan: #e8c49a;
+    --forest-green: #5a8a6a;
+    --moss: #7aaa8a;
+    --blush: #f2a0a0;
+    --soft-pink: #ffd6d6;
+    --gold: #f5c842;
+    --sky: #b8dff0;
+    --lavender: #d4b8f0;
+    --dark: #3a2a1a;
+    --card-bg: rgba(255,248,240,0.95);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated forest background */
+  .forest-bg {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, #c8e6f5 0%, #d4edaa 40%, #a8d48a 70%, #7aaa6a 100%);
+    z-index: 0;
+  }
+
+  .forest-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 60%, rgba(90,138,106,0.4) 0%, transparent 40%),
+      radial-gradient(ellipse at 85% 70%, rgba(90,138,106,0.35) 0%, transparent 35%),
+      radial-gradient(ellipse at 50% 80%, rgba(58,110,78,0.3) 0%, transparent 50%);
+  }
+
+  /* Floating leaves */
+  .leaf {
+    position: fixed;
+    font-size: 1.4rem;
+    animation: floatLeaf linear infinite;
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes floatLeaf {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* Stars/sparkles */
+  .sparkle {
+    position: fixed;
+    font-size: 1rem;
+    animation: twinkle 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* Main container */
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+  }
+
+  /* ===== SCREEN: INTRO ===== */
+  #screen-intro {
+    text-align: center;
+    animation: fadeInUp 0.8s ease both;
+  }
+
+  .characters {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .char {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .char-svg {
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.15));
+    animation: charBob 2.5s ease-in-out infinite;
+  }
+  .char-svg:nth-child(1) { animation-delay: 0.4s; }
+
+  @keyframes charBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .char-label {
+    font-family: 'Baloo 2', cursive;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--warm-brown);
+    background: white;
+    padding: 3px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .heart-connector {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    animation: heartbeat 1.2s ease-in-out infinite;
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+
+  .intro-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 800;
+    color: var(--warm-brown);
+    line-height: 1.1;
+    margin-bottom: 12px;
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.8);
+  }
+
+  .intro-subtitle {
+    font-size: 1.05rem;
+    color: var(--forest-green);
+    font-weight: 600;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+
+  .name-input-wrap {
+    margin-bottom: 24px;
+  }
+
+  .name-input-wrap label {
+    display: block;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--warm-brown);
+    margin-bottom: 8px;
+  }
+
+  .name-input {
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 20px;
+    border: 3px solid var(--bambi-tan);
+    border-radius: 50px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    background: white;
+    color: var(--dark);
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .name-input:focus {
+    border-color: var(--soft-brown);
+    box-shadow: 0 0 0 4px rgba(200,133,90,0.15);
+  }
+
+  .btn-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--soft-brown), var(--warm-brown));
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(139,90,60,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-start:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(139,90,60,0.4);
+  }
+  .btn-start:active { transform: translateY(0); }
+
+  /* ===== SCREEN: QUIZ ===== */
+  #screen-quiz { display: none; }
+
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.6);
+    border-radius: 20px;
+    height: 12px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--soft-brown), var(--gold));
+    border-radius: 20px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .question-card {
+    background: var(--card-bg);
+    border-radius: 28px;
+    padding: 36px 32px;
+    box-shadow:
+      0 10px 40px rgba(139,90,60,0.15),
+      0 2px 8px rgba(0,0,0,0.08);
+    animation: fadeInUp 0.5s ease both;
+    border: 2px solid rgba(232,196,154,0.5);
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .q-number {
+    background: linear-gradient(135deg, var(--soft-brown), var(--warm-brown));
+    color: white;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .q-emoji {
+    font-size: 1.8rem;
+  }
+
+  .question-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(1.1rem, 3vw, 1.35rem);
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+
+  .answer-textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 16px 20px;
+    border: 3px solid var(--bambi-tan);
+    border-radius: 20px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--dark);
+    background: rgba(255,255,255,0.9);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    line-height: 1.6;
+  }
+  .answer-textarea:focus {
+    border-color: var(--soft-brown);
+    box-shadow: 0 0 0 4px rgba(200,133,90,0.12);
+  }
+  .answer-textarea::placeholder {
+    color: #bba898;
+    font-style: italic;
+  }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    gap: 12px;
+  }
+
+  .btn-prev {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    color: var(--soft-brown);
+    border: 2px solid var(--bambi-tan);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-prev:hover {
+    background: var(--soft-pink);
+    border-color: var(--blush);
+  }
+  .btn-prev:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .btn-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--soft-brown), var(--warm-brown));
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(139,90,60,0.3);
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+  }
+  .btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(139,90,60,0.4);
+  }
+
+  .question-mascot {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+  }
+
+  /* ===== SCREEN: SENDING ===== */
+  #screen-sending {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .sending-anim {
+    font-size: 5rem;
+    animation: sendPulse 1s ease-in-out infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes sendPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.15) rotate(-10deg); }
+  }
+
+  /* ===== SCREEN: END ===== */
+  #screen-end {
+    display: none;
+    text-align: center;
+  }
+
+  .end-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(2rem, 7vw, 3.5rem);
+    font-weight: 800;
+    color: var(--warm-brown);
+    text-shadow: 3px 3px 0 rgba(255,255,255,0.9);
+    margin-bottom: 10px;
+    animation: titlePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes titlePop {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .end-subtitle {
+    font-size: 1.1rem;
+    color: var(--forest-green);
+    font-weight: 600;
+    margin-bottom: 40px;
+  }
+
+  /* Scene animation */
+  .forest-scene {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 30px;
+    height: 280px;
+  }
+
+  .scene-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(180deg, #7aaa6a, #5a8a4a);
+    border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+  }
+
+  .scene-flowers {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    white-space: nowrap;
+    animation: sway 3s ease-in-out infinite;
+  }
+  @keyframes sway {
+    0%, 100% { transform: translateX(-50%) rotate(-3deg); }
+    50% { transform: translateX(-50%) rotate(3deg); }
+  }
+
+  .scene-bear {
+    position: absolute;
+    bottom: 60px;
+    left: 15%;
+    font-size: 5rem;
+    animation: bearWalk 1s ease-in-out both, bearIdle 3s ease-in-out 1s infinite;
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.2));
+  }
+  @keyframes bearWalk {
+    from { transform: translateX(-200px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes bearIdle {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+
+  .scene-bambi {
+    position: absolute;
+    bottom: 55px;
+    right: 10%;
+    font-size: 4.5rem;
+    animation: bambiWalk 1s ease-in-out 0.4s both, bambiIdle 3s ease-in-out 1.4s infinite;
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.2));
+  }
+  @keyframes bambiWalk {
+    from { transform: translateX(200px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes bambiIdle {
+    0%, 100% { transform: translateY(0) rotate(2deg); }
+    50% { transform: translateY(-8px) rotate(-2deg); }
+  }
+
+  .scene-hearts {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .floating-heart {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: floatHeart 2s ease-in-out infinite;
+  }
+  .floating-heart:nth-child(1) { left: -40px; animation-delay: 0s; }
+  .floating-heart:nth-child(2) { left: -10px; animation-delay: 0.4s; font-size: 2rem; }
+  .floating-heart:nth-child(3) { left: 20px; animation-delay: 0.8s; }
+
+  @keyframes floatHeart {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+  }
+
+  .scene-tree-l {
+    position: absolute;
+    bottom: 60px;
+    left: -10px;
+    font-size: 4rem;
+    animation: treeSway 4s ease-in-out infinite;
+  }
+  .scene-tree-r {
+    position: absolute;
+    bottom: 60px;
+    right: -10px;
+    font-size: 3.5rem;
+    animation: treeSway 4s ease-in-out 1s infinite;
+  }
+  @keyframes treeSway {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+
+  .scene-stars-end {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    font-size: 1.3rem;
+    display: flex;
+    justify-content: space-around;
+    animation: starTwinkle 2s ease-in-out infinite;
+  }
+  @keyframes starTwinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    font-size: 1.3rem;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
+  }
+
+  .end-message {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 8px 30px rgba(139,90,60,0.15);
+    border: 2px solid rgba(232,196,154,0.5);
+    margin-bottom: 20px;
+  }
+
+  .end-message p {
+    font-size: 1.05rem;
+    color: var(--dark);
+    font-weight: 500;
+    line-height: 1.7;
+  }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .text-center { text-align: center; }
+
+  .card-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--warm-brown);
+    margin-bottom: 8px;
+  }
+
+  .card-text {
+    font-size: 1rem;
+    color: #7a6050;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* Error toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #e74c3c;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 0.95rem;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 20px rgba(231,76,60,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .question-card { padding: 24px 20px; }
+    .quiz-nav { flex-direction: column; }
+    .btn-prev { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="forest-bg"></div>
+
+<!-- Floating leaves -->
+<div class="leaf" style="left:8%;animation-duration:12s;animation-delay:0s;">🍃</div>
+<div class="leaf" style="left:25%;animation-duration:15s;animation-delay:3s;">🌿</div>
+<div class="leaf" style="left:55%;animation-duration:11s;animation-delay:6s;">🍂</div>
+<div class="leaf" style="left:75%;animation-duration:14s;animation-delay:1s;">🍃</div>
+<div class="leaf" style="left:90%;animation-duration:13s;animation-delay:8s;">🌿</div>
+
+<!-- Sparkles -->
+<div class="sparkle" style="left:5%;top:15%;">✨</div>
+<div class="sparkle" style="left:92%;top:25%;animation-delay:1s;">⭐</div>
+<div class="sparkle" style="left:45%;top:8%;animation-delay:2s;">✨</div>
+<div class="sparkle" style="left:70%;top:12%;animation-delay:0.5s;">🌟</div>
+
+<!-- Confetti container -->
+<div class="confetti-container" id="confetti-container"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast">Please write something first! 🐾</div>
+
+<div class="container">
+
+  <!-- ===== INTRO SCREEN ===== -->
+  <div id="screen-intro">
+    <div class="characters">
+      <!-- Bear SVG -->
+      <div class="char">
+        <svg class="char-svg" width="120" height="140" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation-delay:0s">
+          <!-- Body -->
+          <ellipse cx="60" cy="100" rx="38" ry="36" fill="#8B5A2B"/>
+          <!-- Belly -->
+          <ellipse cx="60" cy="108" rx="22" ry="20" fill="#C89060"/>
+          <!-- Head -->
+          <circle cx="60" cy="62" r="34" fill="#8B5A2B"/>
+          <!-- Ears -->
+          <circle cx="34" cy="36" r="12" fill="#8B5A2B"/>
+          <circle cx="34" cy="36" r="7" fill="#C89060"/>
+          <circle cx="86" cy="36" r="12" fill="#8B5A2B"/>
+          <circle cx="86" cy="36" r="7" fill="#C89060"/>
+          <!-- Face -->
+          <ellipse cx="60" cy="68" rx="18" ry="14" fill="#C89060"/>
+          <!-- Eyes -->
+          <circle cx="50" cy="56" r="5" fill="#2a1a0a"/>
+          <circle cx="70" cy="56" r="5" fill="#2a1a0a"/>
+          <circle cx="52" cy="54" r="2" fill="white"/>
+          <circle cx="72" cy="54" r="2" fill="white"/>
+          <!-- Nose -->
+          <ellipse cx="60" cy="65" rx="5" ry="4" fill="#3a2010"/>
+          <!-- Smile -->
+          <path d="M52 72 Q60 78 68 72" stroke="#3a2010" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <!-- Arms -->
+          <ellipse cx="24" cy="100" rx="12" ry="22" rx="12" fill="#8B5A2B" transform="rotate(-20 24 100)"/>
+          <ellipse cx="96" cy="100" rx="12" ry="22" fill="#8B5A2B" transform="rotate(20 96 100)"/>
+          <!-- Legs -->
+          <ellipse cx="45" cy="130" rx="13" ry="10" fill="#8B5A2B"/>
+          <ellipse cx="75" cy="130" rx="13" ry="10" fill="#8B5A2B"/>
+          <!-- Paws -->
+          <ellipse cx="45" cy="136" rx="14" ry="7" fill="#7a4a20"/>
+          <ellipse cx="75" cy="136" rx="14" ry="7" fill="#7a4a20"/>
+          <!-- Blush -->
+          <circle cx="44" cy="63" r="6" fill="#f4a0a0" opacity="0.5"/>
+          <circle cx="76" cy="63" r="6" fill="#f4a0a0" opacity="0.5"/>
+        </svg>
+        <span class="char-label">🐻 Your Bear</span>
+      </div>
+
+      <div style="font-size:2.5rem;margin-bottom:50px;animation:heartbeat 1.2s ease-in-out infinite;">💕</div>
+
+      <!-- Bambi SVG -->
+      <div class="char">
+        <svg class="char-svg" width="110" height="150" viewBox="0 0 110 150" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation-delay:0.4s">
+          <!-- Body -->
+          <ellipse cx="55" cy="105" rx="30" ry="32" fill="#D4956A"/>
+          <!-- White spots -->
+          <circle cx="48" cy="98" r="5" fill="#f5e8d8" opacity="0.7"/>
+          <circle cx="62" cy="92" r="4" fill="#f5e8d8" opacity="0.7"/>
+          <circle cx="58" cy="108" r="3.5" fill="#f5e8d8" opacity="0.6"/>
+          <!-- Neck -->
+          <ellipse cx="55" cy="76" rx="14" ry="16" fill="#D4956A"/>
+          <!-- Head -->
+          <ellipse cx="55" cy="55" rx="26" ry="24" fill="#D4956A"/>
+          <!-- Ears -->
+          <ellipse cx="30" cy="38" rx="10" ry="16" fill="#D4956A" transform="rotate(-20 30 38)"/>
+          <ellipse cx="30" cy="38" rx="6" ry="11" fill="#f4b8b8" opacity="0.8" transform="rotate(-20 30 38)"/>
+          <ellipse cx="80" cy="38" rx="10" ry="16" fill="#D4956A" transform="rotate(20 80 38)"/>
+          <ellipse cx="80" cy="38" rx="6" ry="11" fill="#f4b8b8" opacity="0.8" transform="rotate(20 80 38)"/>
+          <!-- Eyes -->
+          <ellipse cx="46" cy="50" rx="7" ry="8" fill="#2a1a0a"/>
+          <ellipse cx="64" cy="50" rx="7" ry="8" fill="#2a1a0a"/>
+          <circle cx="48" cy="47" r="3" fill="white"/>
+          <circle cx="66" cy="47" r="3" fill="white"/>
+          <!-- Long lashes -->
+          <line x1="40" y1="44" x2="37" y2="40" stroke="#2a1a0a" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="43" y1="42" x2="41" y2="38" stroke="#2a1a0a" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="46" y1="42" x2="46" y2="37" stroke="#2a1a0a" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Nose -->
+          <ellipse cx="55" cy="60" rx="5" ry="4" fill="#3a2010"/>
+          <!-- Smile -->
+          <path d="M48 65 Q55 71 62 65" stroke="#3a2010" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- Legs -->
+          <rect x="38" y="128" width="10" height="22" rx="5" fill="#C07840"/>
+          <rect x="52" y="128" width="10" height="22" rx="5" fill="#C07840"/>
+          <rect x="62" y="128" width="10" height="22" rx="5" fill="#C07840"/>
+          <!-- Hooves -->
+          <ellipse cx="43" cy="149" rx="7" ry="4" fill="#7a5030"/>
+          <ellipse cx="57" cy="149" rx="7" ry="4" fill="#7a5030"/>
+          <ellipse cx="67" cy="149" rx="7" ry="4" fill="#7a5030"/>
+          <!-- Tail -->
+          <ellipse cx="84" cy="100" rx="7" ry="9" fill="#f5e8d8"/>
+          <!-- Blush -->
+          <circle cx="40" cy="57" r="5" fill="#f4a0a0" opacity="0.5"/>
+          <circle cx="70" cy="57" r="5" fill="#f4a0a0" opacity="0.5"/>
+          <!-- Flower on ear -->
+          <circle cx="78" cy="32" r="5" fill="#f5c842"/>
+          <circle cx="78" cy="32" r="3" fill="#ff8a8a"/>
+        </svg>
+        <span class="char-label">🦌 You</span>
+      </div>
+    </div>
+
+    <h1 class="intro-title">Do you know your Bear? 🐻</h1>
+    <p class="intro-subtitle">Answer 9 questions about him<br>and see how well you know your love! 💕</p>
+
+    <div class="name-input-wrap">
+      <label for="player-name">What's your name, little Bambi? 🌸</label>
+      <input type="text" id="player-name" class="name-input" placeholder="Your name..." maxlength="40">
+    </div>
+
+    <button class="btn-start" onclick="startQuiz()">
+      🌿 Start the Quiz
+    </button>
+  </div>
+
+  <!-- ===== QUIZ SCREEN ===== -->
+  <div id="screen-quiz">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+
+    <div class="question-card" id="question-card">
+      <div class="question-mascot" id="question-mascot"></div>
+      <div class="question-header">
+        <span class="q-number" id="q-number">Question 1/9</span>
+        <span class="q-emoji" id="q-emoji"></span>
+      </div>
+      <div class="question-text" id="question-text"></div>
+      <textarea class="answer-textarea" id="answer-input" placeholder="Write your answer here... 🐾"></textarea>
+      <div class="quiz-nav">
+        <button class="btn-prev" id="btn-prev" onclick="prevQuestion()">← Back</button>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SENDING SCREEN ===== -->
+  <div id="screen-sending" style="text-align:center;padding:80px 20px;">
+    <div class="sending-anim">📬</div>
+    <div class="card-title">Sending your answers...</div>
+    <div class="card-text" style="margin-top:10px;">Hold on little Bambi, your Bear will know everything! 🐻💕</div>
+  </div>
+
+  <!-- ===== END SCREEN ===== -->
+  <div id="screen-end">
+    <h1 class="end-title">Arusha te don pa fund! 💘</h1>
+    <p class="end-subtitle">Forever and always, your Bear loves you ✨</p>
+
+    <div class="forest-scene">
+      <div class="scene-stars-end">✨ 🌟 ⭐ 🌟 ✨</div>
+      <div class="scene-tree-l">🌲</div>
+      <div class="scene-tree-r">🌳</div>
+      <div class="scene-hearts">
+        <span class="floating-heart">💕</span>
+        <span class="floating-heart">❤️</span>
+        <span class="floating-heart">💖</span>
+      </div>
+      <div class="scene-ground"></div>
+      <div class="scene-flowers">🌸 🌼 🌺 🌼 🌸</div>
+      <div class="scene-bear">🐻</div>
+      <div class="scene-bambi">🦌</div>
+    </div>
+
+    <div class="end-message">
+      <p>You just completed the quiz! 🎉<br>
+      Your Bear is waiting to see your answers... <br>
+      He loves you more than honey 🍯💕</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // EmailJS init
+  emailjs.init("CjKfCA4-VoKgiZFA8");
+
+  const QUESTIONS = [
+    { emoji: "🍽️", mascot: "🐻🍴", text: "What is your Bear's favorite dish?" },
+    { emoji: "✈️", mascot: "🌍🌿", text: "Where does your Bear love to go on vacation?" },
+    { emoji: "😅", mascot: "🐻😬", text: "What is your Bear's biggest flaw?" },
+    { emoji: "💪", mascot: "🌟🐻", text: "What is your Bear's greatest quality?" },
+    { emoji: "💬", mascot: "🗣️🐾", text: "Write 5 words your Bear says often" },
+    { emoji: "💕", mascot: "🦌💖", text: "Write 5 things you love about your Bear" },
+    { emoji: "😤", mascot: "😤🐻", text: "Write 5 things your Bear does that annoy you" },
+    { emoji: "📅", mascot: "💑🌸", text: "Write 5 days with your Bear you will never forget" },
+    { emoji: "🌟", mascot: "🦌🐻💫", text: "If you could say one thing to your Bear right now, what would it be?" },
+  ];
+
+  let currentQ = 0;
+  let answers = new Array(QUESTIONS.length).fill("");
+  let playerName = "";
+
+  function startQuiz() {
+    const nameInput = document.getElementById('player-name');
+    playerName = nameInput.value.trim() || "Bambi";
+    document.getElementById('screen-intro').style.display = 'none';
+    document.getElementById('screen-quiz').style.display = 'block';
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const q = QUESTIONS[currentQ];
+    document.getElementById('q-number').textContent = `Question ${currentQ + 1} / ${QUESTIONS.length}`;
+    document.getElementById('q-emoji').textContent = q.emoji;
+    document.getElementById('question-mascot').textContent = q.mascot;
+    document.getElementById('question-text').textContent = q.text;
+    document.getElementById('answer-input').value = answers[currentQ];
+    document.getElementById('answer-input').placeholder = getPlaceholder(currentQ);
+    document.getElementById('btn-prev').disabled = currentQ === 0;
+
+    const isLast = currentQ === QUESTIONS.length - 1;
+    document.getElementById('btn-next').textContent = isLast ? "Send my answers 💌" : "Next →";
+
+    const pct = ((currentQ + 1) / QUESTIONS.length) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+
+    // Animate card
+    const card = document.getElementById('question-card');
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'fadeInUp 0.4s ease both';
+  }
+
+  function getPlaceholder(i) {
+    const placeholders = [
+      "e.g. Pasta, pizza, sushi...",
+      "e.g. Mountains, beach, city trips...",
+      "e.g. Stubbornness, being late...",
+      "e.g. Kindness, humor, loyalty...",
+      "Write 5 words separated by commas...",
+      "Write 5 things you adore about him...",
+      "Careful, be honest! 😄",
+      "The best memories together...",
+      "Speak from your heart 💕",
+    ];
+    return placeholders[i] || "Write your answer here... 🐾";
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function nextQuestion() {
+    const input = document.getElementById('answer-input');
+    const val = input.value.trim();
+    if (!val) {
+      showToast("Please write something first! 🐾");
+      input.focus();
+      return;
+    }
+    answers[currentQ] = val;
+
+    if (currentQ < QUESTIONS.length - 1) {
+      currentQ++;
+      renderQuestion();
+    } else {
+      sendAnswers();
+    }
+  }
+
+  function prevQuestion() {
+    const val = document.getElementById('answer-input').value.trim();
+    if (val) answers[currentQ] = val;
+    if (currentQ > 0) {
+      currentQ--;
+      renderQuestion();
+    }
+  }
+
+  function sendAnswers() {
+    document.getElementById('screen-quiz').style.display = 'none';
+    document.getElementById('screen-sending').style.display = 'block';
+
+    let answersText = `💘 ${playerName} answered your quiz!\n\n`;
+    QUESTIONS.forEach((q, i) => {
+      answersText += `Q${i + 1}: ${q.text}\n→ ${answers[i] || "(no answer)"}\n\n`;
+    });
+
+    emailjs.send("service_vnpuzuv", "template_6lpscst", {
+      answers: answersText,
+      name: playerName,
+      email: "",
+    })
+    .then((response) => {
+      console.log("EmailJS SUCCESS:", response);
+      showEnd();
+    })
+    .catch((error) => {
+      console.error("EmailJS ERROR:", JSON.stringify(error));
+      // Show error on screen so we can debug
+      document.getElementById('screen-sending').innerHTML = `
+        <div style="background:white;border-radius:20px;padding:30px;margin:20px auto;max-width:500px;">
+          <div style="font-size:3rem;margin-bottom:16px;">⚠️</div>
+          <div style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:#c0392b;margin-bottom:12px;">Erreur EmailJS</div>
+          <div style="font-family:monospace;font-size:0.85rem;background:#f8f8f8;padding:12px;border-radius:10px;text-align:left;word-break:break-all;color:#333;">
+            Status: ${error.status}<br>
+            Text: ${error.text}
+          </div>
+          <button onclick="showEnd()" style="margin-top:20px;background:#8B5A2B;color:white;border:none;padding:12px 28px;border-radius:50px;font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;cursor:pointer;">
+            Continue anyway →
+          </button>
+        </div>
+      `;
+    });
+  }
+
+  function showEnd() {
+    document.getElementById('screen-sending').style.display = 'none';
+    document.getElementById('screen-end').style.display = 'block';
+    launchConfetti();
+  }
+
+  function launchConfetti() {
+    const container = document.getElementById('confetti-container');
+    const emojis = ['💕', '🌸', '❤️', '✨', '🌟', '💖', '🍃', '🌺', '💗', '⭐'];
+    for (let i = 0; i < 40; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+        el.style.animationDuration = (2 + Math.random() * 3) + 's';
+        el.style.animationDelay = (Math.random() * 1.5) + 's';
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 6000);
+      }, i * 80);
+    }
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) nextQuestion();
+  });
+</script>
+</body>
+</html>
