@@ -587,6 +587,30 @@
     line-height: 1.6;
   }
 
+  /* 5 mini input boxes */
+  .mini-inputs { display: flex; flex-direction: column; gap: 10px; }
+  .mini-input-row { display: flex; align-items: center; gap: 12px; }
+  .mini-number {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--soft-brown), var(--warm-brown));
+    color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .mini-input {
+    flex: 1; padding: 12px 18px;
+    border: 2.5px solid var(--bambi-tan); border-radius: 50px;
+    font-family: 'Quicksand', sans-serif; font-size: 0.95rem;
+    font-weight: 600; color: var(--dark); background: rgba(255,255,255,0.9);
+    outline: none; transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .mini-input:focus {
+    border-color: var(--soft-brown);
+    box-shadow: 0 0 0 3px rgba(200,133,90,0.12);
+  }
+  .mini-input::placeholder { color: #bba898; font-style: italic; }
+
   /* Error toast */
   .toast {
     position: fixed;
@@ -763,7 +787,7 @@
         <span class="q-emoji" id="q-emoji"></span>
       </div>
       <div class="question-text" id="question-text"></div>
-      <textarea class="answer-textarea" id="answer-input" placeholder="Write your answer here... 🐾"></textarea>
+      <div id="answer-area"></div>
       <div class="quiz-nav">
         <button class="btn-prev" id="btn-prev" onclick="prevQuestion()">← Back</button>
         <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
@@ -812,19 +836,19 @@
   emailjs.init("CjKfCA4-VoKgiZFA8");
 
   const QUESTIONS = [
-    { emoji: "🍽️", mascot: "🐻🍴", text: "What is your Bear's favorite dish?" },
-    { emoji: "✈️", mascot: "🌍🌿", text: "Where does your Bear love to go on vacation?" },
-    { emoji: "😅", mascot: "🐻😬", text: "What is your Bear's biggest flaw?" },
-    { emoji: "💪", mascot: "🌟🐻", text: "What is your Bear's greatest quality?" },
-    { emoji: "💬", mascot: "🗣️🐾", text: "Write 5 words your Bear says often" },
-    { emoji: "💕", mascot: "🦌💖", text: "Write 5 things you love about your Bear" },
-    { emoji: "😤", mascot: "😤🐻", text: "Write 5 things your Bear does that annoy you" },
-    { emoji: "📅", mascot: "💑🌸", text: "Write 5 days with your Bear you will never forget" },
-    { emoji: "🌟", mascot: "🦌🐻💫", text: "If you could say one thing to your Bear right now, what would it be?" },
+    { emoji: "🍽️", mascot: "🐻🍴", text: "What is your Bear's favorite dish?", multi: false },
+    { emoji: "✈️", mascot: "🌍🌿", text: "Where does your Bear love to go on vacation?", multi: false },
+    { emoji: "😅", mascot: "🐻😬", text: "What is your Bear's biggest flaw?", multi: false },
+    { emoji: "💪", mascot: "🌟🐻", text: "What is your Bear's greatest quality?", multi: false },
+    { emoji: "💬", mascot: "🗣️🐾", text: "Write 5 words your Bear says often", multi: true },
+    { emoji: "💕", mascot: "🦌💖", text: "Write 5 things you love about your Bear", multi: true },
+    { emoji: "😤", mascot: "😤🐻", text: "Write 5 things your Bear does that annoy you", multi: true },
+    { emoji: "📅", mascot: "💑🌸", text: "Write 5 days with your Bear you will never forget", multi: true },
+    { emoji: "🌟", mascot: "🦌🐻💫", text: "If you could say one thing to your Bear right now, what would it be?", multi: false },
   ];
 
   let currentQ = 0;
-  let answers = new Array(QUESTIONS.length).fill("");
+  let answers = QUESTIONS.map(q => q.multi ? ["","","","",""] : "");
   let playerName = "";
 
   function startQuiz() {
@@ -841,8 +865,6 @@
     document.getElementById('q-emoji').textContent = q.emoji;
     document.getElementById('question-mascot').textContent = q.mascot;
     document.getElementById('question-text').textContent = q.text;
-    document.getElementById('answer-input').value = answers[currentQ];
-    document.getElementById('answer-input').placeholder = getPlaceholder(currentQ);
     document.getElementById('btn-prev').disabled = currentQ === 0;
 
     const isLast = currentQ === QUESTIONS.length - 1;
@@ -851,6 +873,23 @@
     const pct = ((currentQ + 1) / QUESTIONS.length) * 100;
     document.getElementById('progress-bar').style.width = pct + '%';
 
+    // Render answer area
+    const area = document.getElementById('answer-area');
+    const placeholders = getMiniPlaceholders(currentQ);
+    if (q.multi) {
+      const vals = answers[currentQ];
+      area.innerHTML = `<div class="mini-inputs">` +
+        [0,1,2,3,4].map(i => `
+          <div class="mini-input-row">
+            <div class="mini-number">${i+1}</div>
+            <input class="mini-input" data-idx="${i}" type="text" value="${vals[i] || ''}" placeholder="${placeholders[i] || '...'}" maxlength="120">
+          </div>`).join('') +
+        `</div>`;
+    } else {
+      const val = answers[currentQ] || '';
+      area.innerHTML = `<textarea class="answer-textarea" id="answer-input" placeholder="${placeholders[0]}" maxlength="300">${val}</textarea>`;
+    }
+
     // Animate card
     const card = document.getElementById('question-card');
     card.style.animation = 'none';
@@ -858,19 +897,19 @@
     card.style.animation = 'fadeInUp 0.4s ease both';
   }
 
-  function getPlaceholder(i) {
-    const placeholders = [
-      "e.g. Pasta, pizza, sushi...",
-      "e.g. Mountains, beach, city trips...",
-      "e.g. Stubbornness, being late...",
-      "e.g. Kindness, humor, loyalty...",
-      "Write 5 words separated by commas...",
-      "Write 5 things you adore about him...",
-      "Careful, be honest! 😄",
-      "The best memories together...",
-      "Speak from your heart 💕",
+  function getMiniPlaceholders(i) {
+    const all = [
+      ["e.g. Pizza, pasta, sushi..."],
+      ["e.g. Mountains, beach, city..."],
+      ["e.g. Stubbornness, impatience..."],
+      ["e.g. Kindness, humor, loyalty..."],
+      ["Word 1...", "Word 2...", "Word 3...", "Word 4...", "Word 5..."],
+      ["Thing 1 you love...", "Thing 2...", "Thing 3...", "Thing 4...", "Thing 5..."],
+      ["Thing 1 that annoys you...", "Thing 2...", "Thing 3...", "Thing 4...", "Thing 5..."],
+      ["Day 1 (describe it)...", "Day 2...", "Day 3...", "Day 4...", "Day 5..."],
+      ["Speak from your heart 💕"],
     ];
-    return placeholders[i] || "Write your answer here... 🐾";
+    return all[i] || ["Write here..."];
   }
 
   function showToast(msg) {
@@ -881,14 +920,26 @@
   }
 
   function nextQuestion() {
-    const input = document.getElementById('answer-input');
-    const val = input.value.trim();
-    if (!val) {
-      showToast("Please write something first! 🐾");
-      input.focus();
-      return;
+    const q = QUESTIONS[currentQ];
+    if (q.multi) {
+      const inputs = document.querySelectorAll('.mini-input');
+      const vals = Array.from(inputs).map(inp => inp.value.trim());
+      if (vals.every(v => !v)) {
+        showToast("Please fill at least one box! 🐾");
+        inputs[0].focus();
+        return;
+      }
+      answers[currentQ] = vals;
+    } else {
+      const input = document.getElementById('answer-input');
+      const val = input.value.trim();
+      if (!val) {
+        showToast("Please write something first! 🐾");
+        input.focus();
+        return;
+      }
+      answers[currentQ] = val;
     }
-    answers[currentQ] = val;
 
     if (currentQ < QUESTIONS.length - 1) {
       currentQ++;
@@ -899,8 +950,14 @@
   }
 
   function prevQuestion() {
-    const val = document.getElementById('answer-input').value.trim();
-    if (val) answers[currentQ] = val;
+    const q = QUESTIONS[currentQ];
+    if (q.multi) {
+      const inputs = document.querySelectorAll('.mini-input');
+      if (inputs.length) answers[currentQ] = Array.from(inputs).map(i => i.value.trim());
+    } else {
+      const input = document.getElementById('answer-input');
+      if (input) answers[currentQ] = input.value.trim();
+    }
     if (currentQ > 0) {
       currentQ--;
       renderQuestion();
@@ -913,7 +970,10 @@
 
     let answersText = `💘 ${playerName} answered your quiz!\n\n`;
     QUESTIONS.forEach((q, i) => {
-      answersText += `Q${i + 1}: ${q.text}\n→ ${answers[i] || "(no answer)"}\n\n`;
+      const ans = q.multi
+        ? (answers[i].map((v,n) => `  ${n+1}. ${v||'(empty)'}`).join('\n'))
+        : (answers[i] || '(no answer)');
+      answersText += `Q${i + 1}: ${q.text}\n${ans}\n\n`;
     });
 
     emailjs.send("service_vnpuzuv", "template_o1zc4lq", {
